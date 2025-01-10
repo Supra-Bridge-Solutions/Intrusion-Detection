@@ -27,3 +27,61 @@ check_file_integrity() {
         fi
     done
 }
+
+
+# Function to detect new or modified user accounts
+check_user_accounts() {
+    echo "Checking user accounts..." >> $LOG_FILE
+    # Use a snapshot of /etc/passwd
+    if [[ ! -f /var/log/passwd_snapshot ]]; then
+        cp /etc/passwd /var/log/passwd_snapshot
+    fi
+    diff /var/log/passwd_snapshot /etc/passwd > /tmp/passwd_diff.txt
+    if [[ -s /tmp/passwd_diff.txt ]]; then
+        echo "[ALERT] Changes detected in /etc/passwd:" >> $LOG_FILE
+        cat /tmp/passwd_diff.txt >> $LOG_FILE
+        cp /etc/passwd /var/log/passwd_snapshot
+    fi
+}
+
+# Function to scan for suspicious processes
+check_suspicious_processes() {
+    echo "Checking for suspicious processes..." >> $LOG_FILE
+    ps aux | awk '$3 > 50.0 || $4 > 50.0 {print "[ALERT] High resource usage detected:", $0}' >> $LOG_FILE
+}
+
+# Function to integrate with Tripwire
+check_with_tripwire() {
+    echo "Running Tripwire check..." >> $LOG_FILE
+    if command -v tripwire &> /dev/null; then
+        $TRIPWIRE_CMD >> $LOG_FILE 2>&1
+    else
+        echo "[WARNING] Tripwire is not installed. Skipping this step." >> $LOG_FILE
+    fi
+}
+
+# Function to integrate with chkrootkit
+check_with_chkrootkit() {
+    echo "Running chkrootkit..." >> $LOG_FILE
+    if command -v chkrootkit &> /dev/null; then
+        $CHKROOTKIT_CMD >> $LOG_FILE 2>&1
+    else
+        echo "[WARNING] chkrootkit is not installed. Skipping this step." >> $LOG_FILE
+    fi
+}
+
+# Main script execution
+echo "Starting intrusion detection checks..." >> $LOG_FILE
+
+check_file_integrity
+check_user_accounts
+check_suspicious_processes
+check_with_tripwire
+check_with_chkrootkit
+
+echo "Intrusion detection checks completed - $(date)" >> $LOG_FILE
+echo "Logs available at $LOG_FILE"
+
+# Schedule the script with cron (optional)
+# Example: Add this line to your crontab
+# 0 * * * * /path/to/this/script.sh
