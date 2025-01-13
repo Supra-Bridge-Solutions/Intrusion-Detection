@@ -72,6 +72,7 @@ check_with_chkrootkit() {
     fi
 }
 
+###
 log_message() {
     local LEVEL=$1
     local MESSAGE=$2
