@@ -5,6 +5,8 @@ CHECKSUM_FILE="/var/log/critical_files_checksums.txt"     # Store checksums
 LOG_FILE="/var/log/intrusion_detection.log"              # Log file
 TRIPWIRE_CMD="tripwire --check"                          # Command to run Tripwire
 CHKROOTKIT_CMD="chkrootkit"                              # Command to run chkrootkit
+LOCK_FILE="/tmp/intrusion_detection_lock"
+
 
 # Initialize the log file
 echo "Intrusion Detection Script - $(date)" > $LOG_FILE
@@ -75,7 +77,17 @@ log_message() {
     local MESSAGE=$2
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$LEVEL] $MESSAGE" >> $LOG_FILE
 }
+# Check if the lock file exists
+if [ -e $LOCK_FILE ]; then
+    log_message "WARNING" "Script is already running. Exiting."
+    exit 1
+fi
 
+# Create the lock file to prevent simultaneous execution
+touch $LOCK_FILE
+
+# Remove lock file when script finishes
+trap "rm -f $LOCK_FILE" EXIT
 
 # Main script execution
 echo "Starting intrusion detection checks..." >> $LOG_FILE
