@@ -70,6 +70,13 @@ check_with_chkrootkit() {
     fi
 }
 
+log_message() {
+    local LEVEL=$1
+    local MESSAGE=$2
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$LEVEL] $MESSAGE" >> $LOG_FILE
+}
+
+
 # Main script execution
 echo "Starting intrusion detection checks..." >> $LOG_FILE
 
