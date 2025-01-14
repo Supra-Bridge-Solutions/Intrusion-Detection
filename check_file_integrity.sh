@@ -26,4 +26,5 @@ check_file_integrity() {
     done
 }
 
+#call function
 check_file_integrity
