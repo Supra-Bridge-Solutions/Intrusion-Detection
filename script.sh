@@ -104,3 +104,5 @@ echo "Logs available at $LOG_FILE"
 # Schedule the script with cron (optional)
 # Example: Add this line to your crontab
 # 0 * * * * /path/to/this/script.sh
+
+
